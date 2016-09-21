@@ -1,0 +1,7 @@
+package: macleod.io/bounce
+license: MIT
+owners:
+- name: Alex Macleod
+  email: alex@macleod.io
+import:
+- package: gopkg.in/yaml.v2
