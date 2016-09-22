@@ -12,3 +12,18 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+package config
+
+import (
+	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+)
+
+func TestLoadsConfig(t *testing.T) {
+	Load()
+
+	Convey("Test", t, func() {
+		So(1, ShouldEqual, 1)
+	})
+}
