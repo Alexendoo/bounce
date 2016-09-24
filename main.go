@@ -14,8 +14,7 @@
 
 package main
 
-import "macleod.io/bounce/config"
-
 func main() {
-	config.Load()
+	// flag.Parse()
+	// config.Load()
 }

@@ -1,0 +1,7 @@
+version: 1
+name: alex
+networks:
+- name: snoonet
+  port: 80
+- name: freenode
+  nick: alexendoo

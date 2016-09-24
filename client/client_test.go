@@ -12,19 +12,33 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package config
+package client
 
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	s "github.com/smartystreets/goconvey/convey"
 )
 
-func TestLoadsConfig(t *testing.T) {
-	*location = "test.yaml"
-	Load()
+func TestNetwork(t *testing.T) {
+	s.Convey("connects to a network", t, func() {
+		network := &Network{
+			Name: "Test",
 
-	Convey("Test", t, func() {
-		So(1, ShouldEqual, 1)
+			Host: "localhost",
+			Port: "6000",
+
+			Nick: "Nick",
+			User: "User",
+			Real: "Real name",
+		}
+
+		go func() {
+
+		}()
+
+		network.connect()
+		network.register()
+		network.disconnect()
 	})
 }

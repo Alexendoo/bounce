@@ -12,19 +12,42 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package config
+package client
 
 import (
-	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
+	"fmt"
+	"net"
 )
 
-func TestLoadsConfig(t *testing.T) {
-	*location = "test.yaml"
-	Load()
+type Network struct {
+	Name string
 
-	Convey("Test", t, func() {
-		So(1, ShouldEqual, 1)
-	})
+	Host string
+	Port string
+
+	Nick string
+	Real string
+	User string
+
+	conn net.Conn
+}
+
+func (network *Network) connect() error {
+	addr := net.JoinHostPort(network.Host, network.Port)
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return err
+	}
+	network.conn = conn
+	return nil
+}
+
+func (network *Network) disconnect() {
+	network.conn.Close()
+}
+
+func (network *Network) register() {
+	fmt.Fprintf(network.conn, "CAP LS 302\r\n")
+	fmt.Fprintf(network.conn, "NICK %s\r\n", network.Nick)
+	fmt.Fprintf(network.conn, "USER %s - - :%s\r\n", network.User, network.Real)
 }

@@ -20,6 +20,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
+
+	"macleod.io/bounce/client"
 
 	"gopkg.in/yaml.v2"
 )
@@ -27,56 +30,41 @@ import (
 type config struct {
 	Version  int
 	Name     string
-	Networks []network
-}
-
-type network struct {
-	Name string
-
-	Address string
-	Port    uint16
-
-	Nick     string
-	Realname string
-	Username string
+	Networks []client.Network
 }
 
 type password struct {
 }
 
 var (
-	location string
+	location = flag.String("config", getDefaultConfig(), "read configuration from a specified file")
 	// Config is the current configuration, may not be saved to disk
 	Config config
 )
 
 // Load the configuration file into Config
 func Load() {
-	parseFlags()
 	readConfigFile()
 
 	tb, _ := yaml.Marshal(&Config)
 	fmt.Println(string(tb))
 }
 
-func parseFlags() {
-	flag.StringVar(&location, "config", getConfigLocation(), "read configuration from a specified file")
-	flag.Parse()
-}
-
 func readConfigFile() {
-	location = getConfigLocation()
-	bytes, err := ioutil.ReadFile(location)
+	bytes, err := ioutil.ReadFile(*location)
 	if err != nil {
 		log.Fatal(err)
 	}
 	yaml.Unmarshal(bytes, &Config)
 }
 
-func getConfigLocation() string {
-	if location != "" {
-		return location
+func getDefaultConfig() string {
+	if runtime.GOOS == "windows" {
+		return os.ExpandEnv("$USERPROFILE\\.bounce\\test.yaml")
 	}
-	println(os.Getenv("HOME"))
-	return "test.yaml"
+	if os.ExpandEnv("HOME") != "" {
+		return os.ExpandEnv("$HOME/.bounce/test.yaml")
+	}
+	log.Fatal("Couldn't find home directory")
+	return ""
 }
