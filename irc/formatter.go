@@ -19,10 +19,14 @@ import (
 	"io"
 )
 
+// FPrint writes a line to w ending with \r\n as per rfc1459
+// see io.WriteString
 func FPrint(w io.Writer, line string) (int, error) {
 	return io.WriteString(w, line+"\r\n")
 }
 
+// Fprintf writes a formatted line to w ending with \r\n as per rfc1459
+// see fmt.Fprintf
 func Fprintf(w io.Writer, format string, a ...interface{}) (int, error) {
 	return fmt.Fprintf(w, format+"\r\n", a...)
 }

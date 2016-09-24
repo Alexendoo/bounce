@@ -17,14 +17,10 @@ package config
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	_ "github.com/smartystreets/goconvey/convey"
 )
 
 func TestLoadsConfig(t *testing.T) {
 	*location = "test.yaml"
 	Load()
-
-	Convey("Test", t, func() {
-		So(1, ShouldEqual, 1)
-	})
 }

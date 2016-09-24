@@ -1,0 +1,11 @@
+language: go
+go_import_path: macleod.io/bounce
+go:
+- 1.7.1
+install:
+- mkdir "$GOPATH/bin"
+- curl https://glide.sh/get | sh
+- glide install
+script:
+- go build
+- go test $(glide nv)

@@ -22,44 +22,42 @@ import (
 	c "github.com/smartystreets/goconvey/convey"
 )
 
-func TestNetwork(t *testing.T) {
-	c.Convey("Connects to a network", t, func() {
-		network := &Network{
-			Name: "Test",
+func TestRegistration(t *testing.T) {
+	network := &Network{
+		Name: "Test",
 
-			Host: "localhost",
-			Port: "25000",
+		Host: "localhost",
+		Port: "25000",
 
-			Nick: "Nick",
-			User: "User",
-			Real: "Real name",
-		}
+		Nick: "Nick",
+		User: "User",
+		Real: "Real name",
+	}
 
-		done := make(chan bool)
+	done := make(chan bool)
 
-		go func() {
-			listener, _ := net.Listen("tcp", "localhost:25000")
-			conn, _ := listener.Accept()
+	go func() {
+		listener, _ := net.Listen("tcp", "localhost:25000")
+		conn, _ := listener.Accept()
 
-			scanner := bufio.NewScanner(conn)
-			c.Convey("Requests capabilities", t, func() {
-				scanner.Scan()
-				c.So(scanner.Text(), c.ShouldEqual, "CAP LS 302")
-			})
-			c.Convey("Sets nickname", t, func() {
-				scanner.Scan()
-				c.So(scanner.Text(), c.ShouldEqual, "NICK Nick")
-			})
-			c.Convey("Sets username", t, func() {
-				scanner.Scan()
-				c.So(scanner.Text(), c.ShouldEqual, "USER User - - :Real name")
-			})
-			done <- true
-		}()
+		scanner := bufio.NewScanner(conn)
+		c.Convey("Requests capabilities", t, func() {
+			scanner.Scan()
+			c.So(scanner.Text(), c.ShouldEqual, "CAP LS 302")
+		})
+		c.Convey("Sets nickname", t, func() {
+			scanner.Scan()
+			c.So(scanner.Text(), c.ShouldEqual, "NICK Nick")
+		})
+		c.Convey("Sets username", t, func() {
+			scanner.Scan()
+			c.So(scanner.Text(), c.ShouldEqual, "USER User - - :Real name")
+		})
+		done <- true
+	}()
 
-		network.connect()
-		network.register()
-		<-done
-		network.disconnect()
-	})
+	network.connect()
+	network.register()
+	<-done
+	network.disconnect()
 }
