@@ -12,43 +12,17 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package client
+package irc
 
 import (
-	"net"
-
-	"macleod.io/bounce/irc"
+	"fmt"
+	"io"
 )
 
-type Network struct {
-	Name string
-
-	Host string
-	Port string
-
-	Nick string
-	Real string
-	User string
-
-	conn net.Conn
+func FPrint(w io.Writer, line string) (int, error) {
+	return io.WriteString(w, line+"\r\n")
 }
 
-func (n *Network) connect() error {
-	addr := net.JoinHostPort(n.Host, n.Port)
-	conn, err := net.Dial("tcp", addr)
-	if err != nil {
-		return err
-	}
-	n.conn = conn
-	return nil
-}
-
-func (n *Network) disconnect() {
-	n.conn.Close()
-}
-
-func (n *Network) register() {
-	irc.FPrint(n.conn, "CAP LS 302")
-	irc.Fprintf(n.conn, "NICK %s", n.Nick)
-	irc.Fprintf(n.conn, "USER %s - - :%s", n.User, n.Real)
+func Fprintf(w io.Writer, format string, a ...interface{}) (int, error) {
+	return fmt.Fprintf(w, format+"\r\n", a...)
 }
