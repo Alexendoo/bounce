@@ -17,11 +17,11 @@ package client
 import (
 	"testing"
 
-	s "github.com/smartystreets/goconvey/convey"
+	c "github.com/smartystreets/goconvey/convey"
 )
 
 func TestNetwork(t *testing.T) {
-	s.Convey("connects to a network", t, func() {
+	c.Convey("connects to a network", t, func() {
 		network := &Network{
 			Name: "Test",
 

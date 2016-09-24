@@ -15,8 +15,9 @@
 package client
 
 import (
-	"fmt"
 	"net"
+
+	"macleod.io/bounce/irc"
 )
 
 type Network struct {
@@ -29,25 +30,25 @@ type Network struct {
 	Real string
 	User string
 
-	conn net.Conn
+	conn irc.Conn
 }
 
-func (network *Network) connect() error {
-	addr := net.JoinHostPort(network.Host, network.Port)
-	conn, err := net.Dial("tcp", addr)
+func (n *Network) connect() error {
+	addr := net.JoinHostPort(n.Host, n.Port)
+	conn, err := irc.Dial("tcp", addr)
 	if err != nil {
 		return err
 	}
-	network.conn = conn
+	n.conn = conn
 	return nil
 }
 
-func (network *Network) disconnect() {
-	network.conn.Close()
+func (n *Network) disconnect() {
+	n.conn.Close()
 }
 
-func (network *Network) register() {
-	fmt.Fprintf(network.conn, "CAP LS 302\r\n")
-	fmt.Fprintf(network.conn, "NICK %s\r\n", network.Nick)
-	fmt.Fprintf(network.conn, "USER %s - - :%s\r\n", network.User, network.Real)
+func (n *Network) register() {
+	n.conn.WriteLine("CAP LS 302")
+	n.conn.WriteLineF("NICK %s", n.Nick)
+	n.conn.WriteLineF("USER %s - - :%s", n.User, n.Real)
 }
