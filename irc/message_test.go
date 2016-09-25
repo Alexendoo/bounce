@@ -24,107 +24,107 @@ func TestParsing(t *testing.T) {
 	c.Convey("basic command", t, func() {
 		msg := ParseMessage("PRIVMSG")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "",
-			command: "PRIVMSG",
-			params:  []string(nil),
-			time:    msg.time,
+			Tags:    map[string]string(nil),
+			Prefix:  "",
+			Command: "PRIVMSG",
+			Params:  []string(nil),
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("basic tag", t, func() {
 		msg := ParseMessage("@key=value PING")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags: map[string]string{
+			Tags: map[string]string{
 				"key": "value",
 			},
-			prefix:  "",
-			command: "PING",
-			params:  []string(nil),
-			time:    msg.time,
+			Prefix:  "",
+			Command: "PING",
+			Params:  []string(nil),
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("multiple tags", t, func() {
 		msg := ParseMessage("@first;second=2;third PING")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags: map[string]string{
+			Tags: map[string]string{
 				"first":  "",
 				"second": "2",
 				"third":  "",
 			},
-			prefix:  "",
-			command: "PING",
-			params:  []string(nil),
-			time:    msg.time,
+			Prefix:  "",
+			Command: "PING",
+			Params:  []string(nil),
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("prefix", t, func() {
 		msg := ParseMessage(":irc.example.org PING")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "irc.example.org",
-			command: "PING",
-			params:  []string(nil),
-			time:    msg.time,
+			Tags:    map[string]string(nil),
+			Prefix:  "irc.example.org",
+			Command: "PING",
+			Params:  []string(nil),
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("basic param", t, func() {
 		msg := ParseMessage("PING one")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "",
-			command: "PING",
-			params:  []string{"one"},
-			time:    msg.time,
+			Tags:    map[string]string(nil),
+			Prefix:  "",
+			Command: "PING",
+			Params:  []string{"one"},
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("trailing whitespace", t, func() {
 		msg := ParseMessage("PING ")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "",
-			command: "PING",
-			params:  []string(nil),
-			time:    msg.time,
+			Tags:    map[string]string(nil),
+			Prefix:  "",
+			Command: "PING",
+			Params:  []string(nil),
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("trailing whitespace param", t, func() {
 		msg := ParseMessage("PING one ")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "",
-			command: "PING",
-			params:  []string{"one"},
-			time:    msg.time,
+			Tags:    map[string]string(nil),
+			Prefix:  "",
+			Command: "PING",
+			Params:  []string{"one"},
+			Time:    msg.Time,
 		})
 	})
 	c.Convey("multiple params", t, func() {
 		msg := ParseMessage("PRIVMSG #channel :a b c ")
 		c.So(msg, c.ShouldResemble, &Message{
-			tags:    map[string]string(nil),
-			prefix:  "",
-			command: "PRIVMSG",
-			params: []string{
+			Tags:    map[string]string(nil),
+			Prefix:  "",
+			Command: "PRIVMSG",
+			Params: []string{
 				"#channel",
 				"a b c ",
 			},
-			time: msg.time,
+			Time: msg.Time,
 		})
 	})
 	c.Convey("all of the above", t, func() {
 		msg := ParseMessage(`@time=half\sfive;foo :example.org CAP * LS :server-time sasl`)
 		c.So(msg, c.ShouldResemble, &Message{
-			tags: map[string]string{
+			Tags: map[string]string{
 				"time": "half five",
 				"foo":  "",
 			},
-			prefix:  "example.org",
-			command: "CAP",
-			params: []string{
+			Prefix:  "example.org",
+			Command: "CAP",
+			Params: []string{
 				"*",
 				"LS",
 				"server-time sasl",
 			},
-			time: msg.time,
+			Time: msg.Time,
 		})
 	})
 }

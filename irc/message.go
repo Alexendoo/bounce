@@ -24,20 +24,20 @@ import (
 // <message> ::= ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params>
 func ParseMessage(raw string) *Message {
 	message := &Message{}
-	message.time = time.Now()
+	message.Time = time.Now()
 	// <tags> ::= <tag> [';' <tag>]*
 	trail, lead := nextToken(raw, 0, 0)
 	if raw[trail] == '@' {
-		message.tags = parseTags(raw[trail+1 : lead])
+		message.Tags = parseTags(raw[trail+1 : lead])
 		trail, lead = nextToken(raw, trail, lead)
 	}
 	// <prefix> ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
 	if raw[trail] == ':' {
-		message.prefix = raw[trail+1 : lead]
+		message.Prefix = raw[trail+1 : lead]
 		trail, lead = nextToken(raw, trail, lead)
 	}
 	// <command>  ::= <letter> { <letter> } | <number> <number> <number>
-	message.command = raw[trail:lead]
+	message.Command = raw[trail:lead]
 	trail, lead = nextToken(raw, trail, lead)
 	// <params> ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
 	length := len(raw)
@@ -45,19 +45,20 @@ func ParseMessage(raw string) *Message {
 		// <trailing> ::= <Any, possibly *empty*, sequence of octets not including
 		//                 NUL or CR or LF>
 		if raw[trail] == ':' {
-			message.params = append(message.params, raw[trail+1:])
+			message.Params = append(message.Params, raw[trail+1:])
 			break
 		}
 		// <middle> ::= <Any *non-empty* sequence of octets not including SPACE or
 		//               NUL or CR or LF, the first of which may not be ':'>
-		message.params = append(message.params, raw[trail:lead])
+		message.Params = append(message.Params, raw[trail:lead])
 		trail, lead = nextToken(raw, trail, lead)
 	}
 	return message
 }
 
 // advance the trail and lead cursors to the start and end of the next word
-// e.g.
+//
+// e.g. nextToken("ABC DEF", 0, 3) = (4, 7)
 // "ABC DEF" → "ABC DEF"
 //  ^  ^     →      ^  ^
 func nextToken(raw string, trail, lead int) (newTrail, newLead int) {
@@ -109,10 +110,17 @@ func parseTags(tagString string) map[string]string {
 // - https://tools.ietf.org/html/rfc1459#section-2.3
 // - http://ircv3.net/specs/core/message-tags-3.2.html
 type Message struct {
-	tags    map[string]string
-	prefix  string
-	command string
-	params  []string
-	// time the message was received
-	time time.Time
+	Tags map[string]string
+	// Prefix is typically the source of the message, e.g. nick!ident@host
+	// or irc.example.org
+	Prefix string
+	// Command is a regular command (PRIVMSG, PING, etc.) or a numeric reply
+	// - https://tools.ietf.org/html/rfc1459#section-4
+	// - https://tools.ietf.org/html/rfc1459#section-6
+	Command string
+	// Params depend on the Command, for example with a PRIVMSG it would be the
+	// message target followed by the message text to send
+	Params []string
+	// Time is the message was received
+	Time time.Time
 }
