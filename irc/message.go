@@ -23,20 +23,38 @@ import (
 func ParseMessage(raw string) *Message {
 	message := &Message{}
 	message.time = time.Now()
-	// Message tags
+	// tags
 	if strings.HasPrefix(raw, "@") {
 		i := strings.IndexByte(raw, ' ')
 		message.tags = parseTags(raw[1:i])
 		raw = raw[i+1:]
 	}
-	// Message prefix
+	// prefix
 	if strings.HasPrefix(raw, ":") {
 		i := strings.IndexByte(raw, ' ')
 		message.prefix = raw[1:i]
 		raw = raw[i+1:]
 	}
+	// command
+	i := strings.IndexByte(raw, ' ')
+	if i < 0 {
+		i = len(raw)
+	}
+	message.command = raw[:i]
+	// params
+	for len(raw) > i {
+		raw = raw[i+1:]
+		i = strings.IndexByte(raw, ' ')
+		message.params = append(message.params, raw[:i])
+	}
 	return message
 }
+
+// func nextToken(raw *string, lead, trail int) (newLead, newTrail int) {
+// 	length := len(*raw)
+
+// 	return 0, 0
+// }
 
 func parseTags(tagString string) []Tag {
 	tagStrings := strings.Split(tagString, ";")
@@ -48,12 +66,13 @@ func parseTags(tagString string) []Tag {
 		`\r`, "\r",
 		`\n`, "\n",
 	)
-	tags := []Tag{}
+	tags := make([]Tag, len(tagStrings))
 	for i, tag := range tagStrings {
 		kv := strings.SplitN(tag, "=", 2)
 		tags[i].key = kv[0]
 		tags[i].value = r.Replace(kv[1])
 	}
+
 	return tags
 }
 
