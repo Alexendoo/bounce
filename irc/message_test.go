@@ -77,6 +77,26 @@ func TestParsing(t *testing.T) {
 			time:    msg.time,
 		})
 	})
+	c.Convey("trailing whitespace", t, func() {
+		msg := ParseMessage("PING ")
+		c.So(msg, c.ShouldResemble, &Message{
+			tags:    map[string]string(nil),
+			prefix:  "",
+			command: "PING",
+			params:  []string(nil),
+			time:    msg.time,
+		})
+	})
+	c.Convey("trailing whitespace param", t, func() {
+		msg := ParseMessage("PING one ")
+		c.So(msg, c.ShouldResemble, &Message{
+			tags:    map[string]string(nil),
+			prefix:  "",
+			command: "PING",
+			params:  []string{"one"},
+			time:    msg.time,
+		})
+	})
 	c.Convey("multiple params", t, func() {
 		msg := ParseMessage("PRIVMSG #channel :a b c ")
 		c.So(msg, c.ShouldResemble, &Message{
