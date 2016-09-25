@@ -4,7 +4,7 @@ go:
 - 1.7.1
 install:
 - mkdir "$GOPATH/bin"
-- curl https://glide.sh/get | sh
+- bash <(curl -s https://glide.sh/get)
 - glide install
 script:
 - go build
