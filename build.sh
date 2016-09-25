@@ -16,6 +16,6 @@
 
 mkdir .build 2>/dev/null
 for dir in $(go list ./... | grep -v vendor); do
-	go test -race -v -coverprofile=".build/${dir//\//.}.cover" "$dir"
+  go test -race -v -coverprofile=".build/${dir//\//.}.cover" "$dir"
 done
 cat .build/*.cover > coverage.txt
