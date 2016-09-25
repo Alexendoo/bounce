@@ -110,31 +110,29 @@ func TestParsing(t *testing.T) {
 }
 
 func TestNextToken(t *testing.T) {
-	c.Convey("Calculates token offsets", t, func() {
-		c.Convey("initial offset", func() {
-			trail, lead := nextToken("ABC DEF GHI", 0, 0)
-			c.So(trail, c.ShouldEqual, 0)
-			c.So(lead, c.ShouldEqual, 3)
-		})
-		c.Convey("middle offset", func() {
-			trail, lead := nextToken("ABC DEF GHI", 0, 3)
-			c.So(trail, c.ShouldEqual, 4)
-			c.So(lead, c.ShouldEqual, 7)
-		})
-		c.Convey("penultimate offset", func() {
-			trail, lead := nextToken("ABC DEF GHI", 4, 7)
-			c.So(trail, c.ShouldEqual, 8)
-			c.So(lead, c.ShouldEqual, 11)
-		})
-		c.Convey("last offset", func() {
-			trail, lead := nextToken("ABC DEF GHI", 8, 11)
-			c.So(trail, c.ShouldEqual, 11)
-			c.So(lead, c.ShouldEqual, 11)
-		})
-		c.Convey("skips multiple spaces", func() {
-			trail, lead := nextToken("ABC  DEF", 0, 4)
-			c.So(trail, c.ShouldEqual, 5)
-			c.So(lead, c.ShouldEqual, 8)
-		})
+	c.Convey("initial offset", t, func() {
+		trail, lead := nextToken("ABC DEF GHI", 0, 0)
+		c.So(trail, c.ShouldEqual, 0)
+		c.So(lead, c.ShouldEqual, 3)
+	})
+	c.Convey("middle offset", t, func() {
+		trail, lead := nextToken("ABC DEF GHI", 0, 3)
+		c.So(trail, c.ShouldEqual, 4)
+		c.So(lead, c.ShouldEqual, 7)
+	})
+	c.Convey("penultimate offset", t, func() {
+		trail, lead := nextToken("ABC DEF GHI", 4, 7)
+		c.So(trail, c.ShouldEqual, 8)
+		c.So(lead, c.ShouldEqual, 11)
+	})
+	c.Convey("last offset", t, func() {
+		trail, lead := nextToken("ABC DEF GHI", 8, 11)
+		c.So(trail, c.ShouldEqual, 11)
+		c.So(lead, c.ShouldEqual, 11)
+	})
+	c.Convey("skips multiple spaces", t, func() {
+		trail, lead := nextToken("ABC  DEF", 0, 4)
+		c.So(trail, c.ShouldEqual, 5)
+		c.So(lead, c.ShouldEqual, 8)
 	})
 }
