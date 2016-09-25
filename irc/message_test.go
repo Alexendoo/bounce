@@ -136,3 +136,20 @@ func TestNextToken(t *testing.T) {
 		c.So(lead, c.ShouldEqual, 8)
 	})
 }
+
+func BenchmarkParsing(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ParseMessage("@time=now :example.org PRIVMSG #channel :message message message")
+	}
+	b.StopTimer()
+}
+
+func BenchmarkNextToken(b *testing.B) {
+	for i := 0; i < b.N; i += 4 {
+		nextToken("ABC DEF    GHI", 0, 0)
+		nextToken("ABC DEF    GHI", 0, 3)
+		nextToken("ABC DEF    GHI", 4, 7)
+		nextToken("ABC DEF    GHI", 11, 14)
+	}
+	b.StopTimer()
+}
