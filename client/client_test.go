@@ -16,30 +16,31 @@ package client
 
 import (
 	"bufio"
+	"io"
 	"net"
 	"testing"
+
+	"macleod.io/bounce/irc"
 
 	c "github.com/smartystreets/goconvey/convey"
 )
 
 func TestRegistration(t *testing.T) {
 	network := &Network{
-		Name: "Test",
-
-		Host: "localhost",
-		Port: "25000",
-
 		Nick: "Nick",
 		User: "User",
 		Real: "Real name",
 	}
 
 	done := make(chan bool)
+	listener, _ := net.Listen("tcp", "localhost:0")
+	host, port, _ := net.SplitHostPort(listener.Addr().String())
+
+	network.Host = host
+	network.Port = port
 
 	go func() {
-		listener, _ := net.Listen("tcp", "localhost:25000")
 		conn, _ := listener.Accept()
-
 		scanner := bufio.NewScanner(conn)
 		c.Convey("Requests capabilities", t, func() {
 			scanner.Scan()
@@ -59,5 +60,35 @@ func TestRegistration(t *testing.T) {
 	network.connect()
 	network.register()
 	<-done
+	network.disconnect()
+}
+
+func TestChannel(t *testing.T) {
+	network := &Network{}
+	listener, _ := net.Listen("tcp", "localhost:0")
+	host, port, _ := net.SplitHostPort(listener.Addr().String())
+
+	println("one")
+
+	network.Host = host
+	network.Port = port
+
+	go func() {
+		conn, _ := listener.Accept()
+		io.WriteString(conn, ":example.org PING\r\n")
+	}()
+
+	network.connect()
+	messages := network.listen()
+
+	c.Convey("emits irc.Message's", t, func() {
+		message := <-messages
+		c.So(message, c.ShouldResemble, &irc.Message{
+			Prefix:  "example.org",
+			Command: "PING",
+			Time:    message.Time,
+		})
+	})
+
 	network.disconnect()
 }

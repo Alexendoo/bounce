@@ -15,6 +15,9 @@
 package client
 
 import (
+	"bufio"
+	"fmt"
+	"io"
 	"net"
 
 	"macleod.io/bounce/irc"
@@ -48,7 +51,23 @@ func (n *Network) disconnect() {
 }
 
 func (n *Network) register() {
-	irc.FPrint(n.conn, "CAP LS 302")
-	irc.Fprintf(n.conn, "NICK %s", n.Nick)
-	irc.Fprintf(n.conn, "USER %s - - :%s", n.User, n.Real)
+	n.sendRaw("CAP LS 302")
+	n.sendRaw(fmt.Sprintf("NICK %s", n.Nick))
+	n.sendRaw(fmt.Sprintf("USER %s - - :%s", n.User, n.Real))
+}
+
+func (n *Network) sendRaw(message string) {
+	io.WriteString(n.conn, message+"\r\n")
+}
+
+func (n *Network) listen() chan *irc.Message {
+	messages := make(chan *irc.Message)
+	scanner := bufio.NewScanner(n.conn)
+	go func() {
+		for scanner.Scan() {
+			messages <- irc.ParseMessage(scanner.Text())
+		}
+		close(messages)
+	}()
+	return messages
 }
