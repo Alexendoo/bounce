@@ -19,44 +19,66 @@ import (
 	"time"
 )
 
-// ParseMessage creates a Message from a raw IRC message
+// ParseMessage creates a Message from a raw IRC message without the <crlf>
+//
+// <message> ::= ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params>
 func ParseMessage(raw string) *Message {
 	message := &Message{}
 	message.time = time.Now()
-	// tags
-	if strings.HasPrefix(raw, "@") {
-		i := strings.IndexByte(raw, ' ')
-		message.tags = parseTags(raw[1:i])
-		raw = raw[i+1:]
+	// <tags> ::= <tag> [';' <tag>]*
+	trail, lead := nextToken(raw, 0, 0)
+	if raw[trail] == '@' {
+		message.tags = parseTags(raw[trail+1 : lead])
+		trail, lead = nextToken(raw, trail, lead)
 	}
-	// prefix
-	if strings.HasPrefix(raw, ":") {
-		i := strings.IndexByte(raw, ' ')
-		message.prefix = raw[1:i]
-		raw = raw[i+1:]
+	// <prefix> ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+	if raw[trail] == ':' {
+		message.prefix = raw[trail+1 : lead]
+		trail, lead = nextToken(raw, trail, lead)
 	}
-	// command
-	i := strings.IndexByte(raw, ' ')
-	if i < 0 {
-		i = len(raw)
-	}
-	message.command = raw[:i]
-	// params
-	for len(raw) > i {
-		raw = raw[i+1:]
-		i = strings.IndexByte(raw, ' ')
-		message.params = append(message.params, raw[:i])
+	// <command>  ::= <letter> { <letter> } | <number> <number> <number>
+	message.command = raw[trail:lead]
+	trail, lead = nextToken(raw, trail, lead)
+	// <params> ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+	length := len(raw)
+	for trail < length {
+		// <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+		//                 NUL or CR or LF>
+		if raw[trail] == ':' {
+			message.params = append(message.params, raw[trail+1:])
+			break
+		}
+		// <middle> ::= <Any *non-empty* sequence of octets not including SPACE or
+		//               NUL or CR or LF, the first of which may not be ':'>
+		message.params = append(message.params, raw[trail:lead])
+		trail, lead = nextToken(raw, trail, lead)
 	}
 	return message
 }
 
-// func nextToken(raw *string, lead, trail int) (newLead, newTrail int) {
-// 	length := len(*raw)
+// advance the trail and lead cursors to the start and end of the next word
+// e.g.
+// "ABC DEF" → "ABC DEF"
+//  ^  ^     →      ^  ^
+func nextToken(raw string, trail, lead int) (newTrail, newLead int) {
+	length := len(raw)
+	// advance trail cursor to the beginning of the next word
+	for trail = lead; trail < length; trail++ {
+		if raw[trail] != ' ' {
+			break
+		}
+	}
+	// advance lead cursor to the end of the next word
+	for lead = trail; lead < length; lead++ {
+		if raw[lead] == ' ' {
+			break
+		}
+	}
+	return trail, lead
+}
 
-// 	return 0, 0
-// }
-
-func parseTags(tagString string) []Tag {
+func parseTags(tagString string) map[string]string {
+	// <tags> ::= <tag> [';' <tag>]*
 	tagStrings := strings.Split(tagString, ";")
 	// http://ircv3.net/specs/core/message-tags-3.2.html#escaping-values
 	r := strings.NewReplacer(
@@ -66,48 +88,31 @@ func parseTags(tagString string) []Tag {
 		`\r`, "\r",
 		`\n`, "\n",
 	)
-	tags := make([]Tag, len(tagStrings))
-	for i, tag := range tagStrings {
+	tags := make(map[string]string)
+	for _, tag := range tagStrings {
+		// <tag>           ::= <key> ['=' <escaped value>]
+		// <key>           ::= [ <vendor> '/' ] <sequence of letters, digits,
+		//                                       hyphens (`-`)>
+		// <escaped value> ::= <sequence of any characters except NUL, CR, LF,
+		//                      semicolon (`;`) and SPACE>
 		kv := strings.SplitN(tag, "=", 2)
-		tags[i].key = kv[0]
-		tags[i].value = r.Replace(kv[1])
+		if len(kv) == 2 {
+			tags[kv[0]] = r.Replace(kv[1])
+		} else {
+			tags[tag] = ""
+		}
 	}
-
 	return tags
 }
 
-// Tag represents IRCv3 message tags, see:
-// - http://ircv3.net/specs/core/message-tags-3.2.html
-// - http://ircv3.net/specs/core/message-tags-3.3.html
-//
-// <tag> ::= <key> ['=' <escaped value>]
-type Tag struct {
-	// <key>           ::= [ <vendor> '/' ] <sequence of letters, digits, hyphens (`-`)>
-	key string
-	// <escaped value> ::= <sequence of any characters except NUL, CR, LF, semicolon
-	//                     (`;`) and SPACE>
-	// value is unescaped
-	value string
-}
-
 // Message represents a parsed Message, see:
-// - https://tools.ietf.org/html/rfc1459#section-2.3.1
-//
-// <message> ::= ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
+// - https://tools.ietf.org/html/rfc1459#section-2.3
+// - http://ircv3.net/specs/core/message-tags-3.2.html
 type Message struct {
-	// <tags>     ::= <tag> [';' <tag>]*
-	tags []Tag
-	// <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
-	prefix string
-	// <command>  ::= <letter> { <letter> } | <number> <number> <number>
+	tags    map[string]string
+	prefix  string
 	command string
-	// <params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
-	// <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
-	//                     or NUL or CR or LF, the first of which may not be ':'>
-	// <trailing> ::= <Any, possibly *empty*, sequence of octets not including
-	//                     NUL or CR or LF>
-	params []string
-	// time the message was received, may be replaced with server indicated time
-	// if server-time is supported
+	params  []string
+	// time the message was received
 	time time.Time
 }
