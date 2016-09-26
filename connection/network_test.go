@@ -68,8 +68,6 @@ func TestChannel(t *testing.T) {
 	listener, _ := net.Listen("tcp", "localhost:0")
 	host, port, _ := net.SplitHostPort(listener.Addr().String())
 
-	println("one")
-
 	network.Host = host
 	network.Port = port
 

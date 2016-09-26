@@ -15,6 +15,7 @@
 package irc
 
 import (
+	"bytes"
 	"strings"
 	"time"
 )
@@ -123,4 +124,50 @@ type Message struct {
 	Params []string
 	// Time is the message was received
 	Time time.Time
+}
+
+// Buffer returns a buffer containing the string form of the Message,
+// including crlf
+//
+// ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
+func (m *Message) Buffer() *bytes.Buffer {
+	var buffer bytes.Buffer
+	if len(m.Tags) > 0 {
+		buffer.WriteByte('@')
+		var multiple bool
+		for key, value := range m.Tags {
+			if multiple {
+				buffer.WriteByte(',')
+			}
+			buffer.WriteString(key)
+			if value != "" {
+				buffer.WriteByte('=')
+				buffer.WriteString(value)
+			}
+			multiple = true
+		}
+		buffer.WriteByte(' ')
+	}
+	if len(m.Prefix) > 0 {
+		buffer.WriteByte(':')
+		buffer.WriteString(m.Prefix)
+		buffer.WriteByte(' ')
+	}
+	buffer.WriteString(m.Command)
+	for _, param := range m.Params {
+		buffer.WriteByte(' ')
+		if strings.ContainsRune(param, ' ') {
+			buffer.WriteByte(':')
+		}
+		buffer.WriteString(param)
+	}
+	buffer.WriteString("\r\n")
+	return &buffer
+}
+
+// String returns the string form of the Message including the crlf
+//
+// ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
+func (m *Message) String() string {
+	return m.Buffer().String()
 }

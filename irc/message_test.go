@@ -17,6 +17,8 @@ package irc
 import (
 	"testing"
 
+	"strings"
+
 	c "github.com/smartystreets/goconvey/convey"
 )
 
@@ -157,6 +159,42 @@ func TestNextToken(t *testing.T) {
 	})
 }
 
+func TestComposition(t *testing.T) {
+	c.Convey("complex message", t, func() {
+		msg := &Message{
+			Tags: map[string]string{
+				"key": "value",
+			},
+			Prefix:  "example.org",
+			Command: "PRIVMSG",
+			Params: []string{
+				"#channel",
+				"hello world",
+			},
+		}
+		c.So(msg.String(), c.ShouldEqual, "@key=value :example.org PRIVMSG #channel :hello world\r\n")
+	})
+	c.Convey("multiple tags", t, func() {
+		msg := &Message{
+			Tags: map[string]string{
+				"one":   "",
+				"two":   "2",
+				"three": "",
+			},
+			Command: "PING",
+		}
+		str := msg.String()
+		c.So(str, c.ShouldStartWith, "@")
+		// Tag order is not guaranteed so split + test contents
+		str = strings.Split(str[1:], " ")[0]
+		tags := strings.Split(str, ",")
+		c.So(tags, c.ShouldHaveLength, 3)
+		c.So(tags, c.ShouldContain, "one")
+		c.So(tags, c.ShouldContain, "two=2")
+		c.So(tags, c.ShouldContain, "three")
+	})
+}
+
 func BenchmarkParsing(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ParseMessage("@time=now :example.org PRIVMSG #channel :message message message")
@@ -170,6 +208,32 @@ func BenchmarkNextToken(b *testing.B) {
 		nextToken("ABC DEF    GHI", 0, 3)
 		nextToken("ABC DEF    GHI", 4, 7)
 		nextToken("ABC DEF    GHI", 11, 14)
+	}
+	b.StopTimer()
+}
+
+var msg = &Message{
+	Tags: map[string]string{
+		"key": "value",
+	},
+	Prefix:  "example.org",
+	Command: "PRIVMSG",
+	Params: []string{
+		"#channel",
+		"hello world",
+	},
+}
+
+func BenchmarkBufferComposition(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		msg.Buffer()
+	}
+	b.StopTimer()
+}
+
+func BenchmarkStringComposition(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		msg.String()
 	}
 	b.StopTimer()
 }
