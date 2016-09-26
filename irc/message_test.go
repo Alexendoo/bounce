@@ -187,7 +187,7 @@ func TestComposition(t *testing.T) {
 		c.So(str, c.ShouldStartWith, "@")
 		// Tag order is not guaranteed so split + test contents
 		str = strings.Split(str[1:], " ")[0]
-		tags := strings.Split(str, ",")
+		tags := strings.Split(str, ";")
 		c.So(tags, c.ShouldHaveLength, 3)
 		c.So(tags, c.ShouldContain, "one")
 		c.So(tags, c.ShouldContain, "two=2")

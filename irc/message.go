@@ -132,33 +132,30 @@ type Message struct {
 // ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
 func (m *Message) Buffer() *bytes.Buffer {
 	var buffer bytes.Buffer
+	// <tags> ::= <tag> [';' <tag>]*
 	if len(m.Tags) > 0 {
 		buffer.WriteByte('@')
-		var multiple bool
-		for key, value := range m.Tags {
-			if multiple {
-				buffer.WriteByte(',')
-			}
-			buffer.WriteString(key)
-			if value != "" {
-				buffer.WriteByte('=')
-				buffer.WriteString(value)
-			}
-			multiple = true
-		}
+		appendTags(&buffer, m)
 		buffer.WriteByte(' ')
 	}
+	// <prefix> ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
 	if len(m.Prefix) > 0 {
 		buffer.WriteByte(':')
 		buffer.WriteString(m.Prefix)
 		buffer.WriteByte(' ')
 	}
+	// <command>  ::= <letter> { <letter> } | <number> <number> <number>
 	buffer.WriteString(m.Command)
+	// <params> ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
 	for _, param := range m.Params {
 		buffer.WriteByte(' ')
 		if strings.ContainsRune(param, ' ') {
 			buffer.WriteByte(':')
 		}
+		// <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+		//                 NUL or CR or LF>
+		// <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
+		//                 or NUL or CR or LF, the first of which may not be ':'>
 		buffer.WriteString(param)
 	}
 	buffer.WriteString("\r\n")
@@ -167,7 +164,36 @@ func (m *Message) Buffer() *bytes.Buffer {
 
 // String returns the string form of the Message including the crlf
 //
-// ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
+// <message> ::= ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
 func (m *Message) String() string {
 	return m.Buffer().String()
+}
+
+// appendTags writes the string representation of m.Tags to buffer
+func appendTags(buffer *bytes.Buffer, m *Message) {
+	var multiple bool
+	r := strings.NewReplacer(
+		`;`, `\:`,
+		` `, `\s`,
+		`\`, `\\`,
+		"\r", `\r`,
+		"\n", `\n`,
+	)
+	// <tags> ::= <tag> [';' <tag>]*
+	for key, value := range m.Tags {
+		// <tag> ::= <key> ['=' <escaped value>]
+		if multiple {
+			buffer.WriteByte(';')
+		}
+		// <key> ::= [ <vendor> '/' ] <sequence of letters, digits, hyphens (`-`)>
+		buffer.WriteString(key)
+		// <escaped value> ::= <sequence of any characters except NUL, CR, LF,
+		//                      semicolon (`;`) and SPACE>
+		if value != "" {
+			buffer.WriteByte('=')
+			buffer.WriteString(r.Replace(value))
+		}
+		multiple = true
+	}
+
 }
