@@ -22,7 +22,7 @@ import (
 	"os"
 	"runtime"
 
-	"macleod.io/bounce/client"
+	"macleod.io/bounce/connection"
 
 	"gopkg.in/yaml.v2"
 )
@@ -30,7 +30,7 @@ import (
 type config struct {
 	Version  int
 	Name     string
-	Networks []client.Network
+	Networks []connection.Network
 }
 
 type password struct {
