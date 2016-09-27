@@ -22,7 +22,7 @@ import (
 	"os"
 	"runtime"
 
-	"macleod.io/bounce/network/upstream"
+	"macleod.io/bounce/network"
 
 	"gopkg.in/yaml.v2"
 )
@@ -30,7 +30,7 @@ import (
 type config struct {
 	Version  int
 	Name     string
-	Networks []upstream.Network
+	Networks []network.Network
 }
 
 type password struct {

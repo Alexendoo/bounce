@@ -26,7 +26,7 @@ import (
 )
 
 func TestRegistration(t *testing.T) {
-	network := &Network{
+	network := &Client{
 		Nick: "Nick",
 		User: "User",
 		Real: "Real name",
@@ -64,7 +64,7 @@ func TestRegistration(t *testing.T) {
 }
 
 func TestChannel(t *testing.T) {
-	network := &Network{}
+	network := &Client{}
 	listener, _ := net.Listen("tcp", "localhost:0")
 	host, port, _ := net.SplitHostPort(listener.Addr().String())
 

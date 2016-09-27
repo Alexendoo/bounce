@@ -13,3 +13,21 @@
 //    limitations under the License.
 
 package network
+
+import (
+	"macleod.io/bounce/network/downstream"
+	"macleod.io/bounce/network/upstream"
+)
+
+type Network struct {
+	Name string
+
+	Addr string
+
+	Nick string
+	Real string
+	User string
+
+	client *upstream.Client
+	server *downstream.Server
+}

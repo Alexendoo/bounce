@@ -23,7 +23,7 @@ import (
 	"macleod.io/bounce/irc"
 )
 
-type Network struct {
+type Client struct {
 	Name string
 
 	Host string
@@ -36,7 +36,7 @@ type Network struct {
 	conn net.Conn
 }
 
-func (n *Network) connect() error {
+func (n *Client) connect() error {
 	addr := net.JoinHostPort(n.Host, n.Port)
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -46,21 +46,21 @@ func (n *Network) connect() error {
 	return nil
 }
 
-func (n *Network) disconnect() {
+func (n *Client) disconnect() {
 	n.conn.Close()
 }
 
-func (n *Network) register() {
+func (n *Client) register() {
 	n.sendRaw("CAP LS 302")
 	n.sendRaw(fmt.Sprintf("NICK %s", n.Nick))
 	n.sendRaw(fmt.Sprintf("USER %s - - :%s", n.User, n.Real))
 }
 
-func (n *Network) sendRaw(message string) {
+func (n *Client) sendRaw(message string) {
 	io.WriteString(n.conn, message+"\r\n")
 }
 
-func (n *Network) listen() chan *irc.Message {
+func (n *Client) listen() chan *irc.Message {
 	messages := make(chan *irc.Message)
 	scanner := bufio.NewScanner(n.conn)
 	go func() {
