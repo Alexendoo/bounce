@@ -8,6 +8,7 @@ install:
 script:
 - go build
 - ./build.sh
+- go test -bench=. -run=^a $(glide nv)
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 notifications:
