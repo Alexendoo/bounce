@@ -26,7 +26,7 @@ import (
 )
 
 func TestRegistration(t *testing.T) {
-	network := &Client{
+	client := &Network{
 		Nick: "Nick",
 		User: "User",
 		Real: "Real name",
@@ -34,10 +34,7 @@ func TestRegistration(t *testing.T) {
 
 	done := make(chan bool)
 	listener, _ := net.Listen("tcp", "localhost:0")
-	host, port, _ := net.SplitHostPort(listener.Addr().String())
-
-	network.Host = host
-	network.Port = port
+	client.Addr = listener.Addr().String()
 
 	go func() {
 		conn, _ := listener.Accept()
@@ -57,27 +54,24 @@ func TestRegistration(t *testing.T) {
 		done <- true
 	}()
 
-	network.connect()
-	network.register()
+	client.connect()
+	client.register()
 	<-done
-	network.disconnect()
+	client.disconnect()
 }
 
 func TestChannel(t *testing.T) {
-	network := &Client{}
+	client := &Network{}
 	listener, _ := net.Listen("tcp", "localhost:0")
-	host, port, _ := net.SplitHostPort(listener.Addr().String())
-
-	network.Host = host
-	network.Port = port
+	client.Addr = listener.Addr().String()
 
 	go func() {
 		conn, _ := listener.Accept()
 		io.WriteString(conn, ":example.org PING\r\n")
 	}()
 
-	network.connect()
-	messages := network.listen()
+	client.connect()
+	messages := client.Outgoing()
 
 	c.Convey("emits irc.Message's", t, func() {
 		message := <-messages
@@ -88,5 +82,5 @@ func TestChannel(t *testing.T) {
 		})
 	})
 
-	network.disconnect()
+	client.disconnect()
 }

@@ -63,11 +63,3 @@ func (s *Server) registerClient(conn net.Conn) {
 func (s *Server) Close() error {
 	return s.listener.Close()
 }
-
-// TODO : register per client, hook into main channel? draw graph
-//      : capabilities under package irc
-
-type Client struct {
-	Capabilities []string
-	Conn         net.Conn
-}

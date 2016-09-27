@@ -12,22 +12,14 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package network
+package downstream
 
-import (
-	"macleod.io/bounce/network/downstream"
-	"macleod.io/bounce/network/upstream"
-)
+import "net"
 
-type Network struct {
-	Name string
+// TODO : register per client, hook into main channel? draw graph
+//      : capabilities under package irc
 
-	Addr string
-
-	Nick string
-	Real string
-	User string
-
-	client *upstream.Client
-	server *downstream.Server
+type Client struct {
+	Capabilities []string
+	Conn         net.Conn
 }

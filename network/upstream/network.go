@@ -18,16 +18,14 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"net"
 
 	"macleod.io/bounce/irc"
 )
 
-type Client struct {
-	Name string
-
-	Host string
-	Port string
+type Network struct {
+	Addr string
 
 	Nick string
 	Real string
@@ -36,9 +34,8 @@ type Client struct {
 	conn net.Conn
 }
 
-func (n *Client) connect() error {
-	addr := net.JoinHostPort(n.Host, n.Port)
-	conn, err := net.Dial("tcp", addr)
+func (n *Network) connect() error {
+	conn, err := net.Dial("tcp", n.Addr)
 	if err != nil {
 		return err
 	}
@@ -46,21 +43,21 @@ func (n *Client) connect() error {
 	return nil
 }
 
-func (n *Client) disconnect() {
+func (n *Network) disconnect() {
 	n.conn.Close()
 }
 
-func (n *Client) register() {
+func (n *Network) register() {
 	n.sendRaw("CAP LS 302")
 	n.sendRaw(fmt.Sprintf("NICK %s", n.Nick))
 	n.sendRaw(fmt.Sprintf("USER %s - - :%s", n.User, n.Real))
 }
 
-func (n *Client) sendRaw(message string) {
+func (n *Network) sendRaw(message string) {
 	io.WriteString(n.conn, message+"\r\n")
 }
 
-func (n *Client) listen() chan *irc.Message {
+func (n *Network) Outgoing() chan *irc.Message {
 	messages := make(chan *irc.Message)
 	scanner := bufio.NewScanner(n.conn)
 	go func() {
@@ -70,4 +67,17 @@ func (n *Client) listen() chan *irc.Message {
 		close(messages)
 	}()
 	return messages
+}
+
+func (n *Network) Incoming(messages chan *irc.Message) {
+	for {
+		message, ok := <-messages
+		if !ok {
+			return
+		}
+		_, err := io.WriteString(n.conn, message.String())
+		if err != nil {
+			log.Printf("err: %#+v\n", err)
+		}
+	}
 }
