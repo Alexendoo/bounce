@@ -15,47 +15,34 @@
 package network
 
 import (
-	"bufio"
-	"io"
+	"log"
 	"net"
-
-	"macleod.io/bounce/irc"
 )
 
 type Server struct {
-	Host string
-	Port string
+	Addr string
 
 	listener net.Listener
 }
 
-func (s *Server) Listen() error {
-	addr := net.JoinHostPort(s.Host, s.Port)
-	listener, err := net.Listen("tcp", addr)
+func (s *Server) Listen() (chan net.Conn, error) {
+	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	s.listener = listener
-	for {
-		conn, err := s.listener.Accept()
-		if err != nil {
-			return err
+	out := make(chan net.Conn)
+	go func() {
+		s.listener = listener
+		for {
+			conn, err := s.listener.Accept()
+			if err != nil {
+				log.Printf("err: %#+v\n", err)
+				return
+			}
+			out <- conn
 		}
-		go s.registerClient(conn)
-	}
-}
-
-func (s *Server) registerClient(conn net.Conn) {
-	io.WriteString(conn, "hello\n")
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		msg := irc.ParseMessage(scanner.Text())
-		switch msg.Command {
-		case "CAP":
-
-		}
-	}
-	conn.Close()
+	}()
+	return out, nil
 }
 
 func (s *Server) Close() error {
