@@ -15,6 +15,7 @@
 #    limitations under the License.
 
 mkdir .build 2>/dev/null
+set -e
 for dir in $(go list ./... | grep -v vendor); do
   go test -race -v -coverprofile=".build/${dir//\//.}.cover" "$dir"
 done
