@@ -22,13 +22,14 @@ import (
 	"os"
 	"runtime"
 
-	"gopkg.in/yaml.v2"
-	"macleod.io/bounce/network"
+	yaml "gopkg.in/yaml.v2"
+	"macleod.io/bounce/networking/network"
+	"macleod.io/bounce/networking/server"
 )
 
 type config struct {
 	Version  int
-	Servers  []network.Server
+	Servers  []server.Server
 	Networks []network.Network
 }
 
