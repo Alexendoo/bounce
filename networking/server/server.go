@@ -14,10 +14,7 @@
 
 package network
 
-import (
-	"log"
-	"net"
-)
+import "net"
 
 type Server struct {
 	Addr string
@@ -31,12 +28,11 @@ func (s *Server) Listen() (chan net.Conn, error) {
 		return nil, err
 	}
 	out := make(chan net.Conn)
+	s.listener = listener
 	go func() {
-		s.listener = listener
 		for {
 			conn, err := s.listener.Accept()
 			if err != nil {
-				log.Printf("err: %#+v\n", err)
 				return
 			}
 			out <- conn
@@ -46,5 +42,9 @@ func (s *Server) Listen() (chan net.Conn, error) {
 }
 
 func (s *Server) Close() error {
+	if s.listener == nil {
+		return nil
+	}
+
 	return s.listener.Close()
 }
