@@ -9,11 +9,13 @@ import (
 
 var _ = Describe("Server", func() {
 	var server *Server
+	var done chan bool
 
 	BeforeEach(func() {
 		server = &Server{
 			Addr: "localhost:0",
 		}
+		done = make(chan bool)
 	})
 
 	AfterEach(func() {
@@ -26,10 +28,12 @@ var _ = Describe("Server", func() {
 		go func() {
 			_, err := net.Dial("tcp", server.listener.Addr().String())
 			Expect(err).NotTo(HaveOccurred())
+			done <- true
 		}()
 		conn, ok := <-conns
 		Expect(conn).NotTo(BeNil())
 		Expect(ok).To(BeTrue())
+		<-done
 	})
 
 	It("Errors on an invalid addr", func() {
