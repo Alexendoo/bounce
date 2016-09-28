@@ -3,11 +3,14 @@ go_import_path: macleod.io/bounce
 go:
 - 1.7.1
 install:
+- ln -s $PWD/vendor/github.com $GOPATH/src/github.com
 - go get -v github.com/Masterminds/glide
 - glide install
+- go install github.com/onsi/ginkgo
 script:
 - go build
-- ./build.sh
+- ginkgo -r --randomizeAllSpecs --randomizeSuites --failOnPending --cover --trace --race --progress
+- find . -iname \*.coverprofile -exec cat {} + > coverage.txt
 - go test -bench=. -run=^a $(glide nv)
 after_success:
 - bash <(curl -s https://codecov.io/bash)
