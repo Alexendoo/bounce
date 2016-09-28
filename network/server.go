@@ -12,7 +12,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package downstream
+package network
 
 import (
 	"bufio"
@@ -25,8 +25,6 @@ import (
 type Server struct {
 	Host string
 	Port string
-
-	Clients []Client
 
 	listener net.Listener
 }

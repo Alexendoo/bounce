@@ -162,13 +162,6 @@ func (m *Message) Buffer() *bytes.Buffer {
 	return &buffer
 }
 
-// String returns the string form of the Message including the crlf
-//
-// <message> ::= ['@' <tags> <SPACE>] [':' <prefix> <SPACE> ] <command> <params> <crlf>
-func (m *Message) String() string {
-	return m.Buffer().String()
-}
-
 // appendTags writes the string representation of m.Tags to buffer
 func appendTags(buffer *bytes.Buffer, m *Message) {
 	var multiple bool

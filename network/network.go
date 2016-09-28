@@ -12,13 +12,12 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package upstream
+package network
 
 import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"net"
 
 	"macleod.io/bounce/irc"
@@ -31,20 +30,34 @@ type Network struct {
 	Real string
 	User string
 
+	In  chan *irc.Message
+	Out chan *irc.Message
+
 	conn net.Conn
 }
 
-func (n *Network) connect() error {
+func (n *Network) Connect() error {
 	conn, err := net.Dial("tcp", n.Addr)
 	if err != nil {
 		return err
 	}
 	n.conn = conn
+	go n.scan()
+	go n.accept()
 	return nil
 }
 
-func (n *Network) disconnect() {
-	n.conn.Close()
+func (n *Network) scan() {
+	scanner := bufio.NewScanner(n.conn)
+	for scanner.Scan() {
+		n.Out <- irc.ParseMessage(scanner.Text())
+	}
+}
+
+func (n *Network) accept() {
+	for message := range n.In {
+		message.Buffer().WriteTo(n.conn)
+	}
 }
 
 func (n *Network) register() {
@@ -57,27 +70,6 @@ func (n *Network) sendRaw(message string) {
 	io.WriteString(n.conn, message+"\r\n")
 }
 
-func (n *Network) Outgoing() chan *irc.Message {
-	messages := make(chan *irc.Message)
-	scanner := bufio.NewScanner(n.conn)
-	go func() {
-		for scanner.Scan() {
-			messages <- irc.ParseMessage(scanner.Text())
-		}
-		close(messages)
-	}()
-	return messages
-}
-
-func (n *Network) Incoming(messages chan *irc.Message) {
-	for {
-		message, ok := <-messages
-		if !ok {
-			return
-		}
-		_, err := io.WriteString(n.conn, message.String())
-		if err != nil {
-			log.Printf("err: %#+v\n", err)
-		}
-	}
+func (n *Network) Disconnect() {
+	n.conn.Close()
 }

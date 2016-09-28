@@ -12,20 +12,29 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package downstream
+package network
 
-// import (
-// 	"testing"
+import (
+	"container/list"
+	"io"
+	"net"
+)
 
-// 	c "github.com/smartystreets/goconvey/convey"
-// )
+// TODO : register per client, hook into main channel? draw graph
+//      : capabilities under package irc
 
-// func TestServer(t *testing.T) {
-// 	c.Convey("produces a valid listener", t, func() {
-// 		server := &Server{
-// 			Host: "localhost",
-// 			Port: "6000",
-// 		}
-// 		server.Listen()
-// 	})
-// }
+type Capabilities struct {
+	Available    []string
+	Acknowledged []string
+}
+
+type Client struct {
+	Server       *Server
+	Element      *list.Element
+	Capabilities []Capabilities
+	Conn         net.Conn
+}
+
+func (c *Client) Register(clients *list.List) {
+	io.WriteString(c.Conn, "hello\n")
+}

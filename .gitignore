@@ -1,3 +1,4 @@
 vendor
 .build
+*.coverprofile
 coverage.txt

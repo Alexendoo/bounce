@@ -1,23 +1,41 @@
-hash: 9d742a5600b5fcdb44145c0d8cd1001e710482ad5291d2e48e80dd955798a41c
-updated: 2016-09-22T12:18:48.3153918+01:00
+hash: 8ffbd33391bd3d540b77a3e274744991421087e25f548e7e4102832973cb9136
+updated: 2016-09-28T14:07:57.2499317+01:00
 imports:
 - name: gopkg.in/yaml.v2
   version: 31c299268d302dd0aa9a0dcf765a3d58971ac83f
 testImports:
-- name: github.com/gopherjs/gopherjs
-  version: 7600e3d439bd24b1a637bb6b67e9936c7d8736b3
+- name: github.com/onsi/ginkgo
+  version: 45a5f6ffb2a14e4f29698c16ae4c0a34018a8951
   subpackages:
-  - js
-- name: github.com/jtolds/gls
-  version: 8ddce2a84170772b95dd5d576c48d517b22cac63
-- name: github.com/smartystreets/assertions
-  version: 2063fd1cc7c975db70502811a34b06ad034ccdf2
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - types
+- name: github.com/onsi/gomega
+  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
   subpackages:
-  - internal/go-render/render
-  - internal/oglematchers
-- name: github.com/smartystreets/goconvey
-  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
+- name: golang.org/x/sys
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
-  - convey
-  - convey/gotest
-  - convey/reporting
+  - unix
