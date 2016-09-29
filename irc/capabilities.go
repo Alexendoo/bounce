@@ -16,6 +16,12 @@ package irc
 
 import "sync"
 
+func NewCapabilities() *Capabilities {
+	return &Capabilities{
+		caps: make(map[string]bool),
+	}
+}
+
 // Capabilities
 type Capabilities struct {
 	sync.RWMutex
@@ -41,7 +47,10 @@ func (c *Capabilities) Enabled(cap string) bool {
 func (c *Capabilities) Support(caps ...string) {
 	c.Lock()
 	for _, cap := range caps {
-		c.caps[cap] = true
+		_, exists := c.caps[cap]
+		if !exists {
+			c.caps[cap] = false
+		}
 	}
 	c.Unlock()
 }
