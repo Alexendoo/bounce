@@ -45,19 +45,21 @@ var _ = Describe("Client", func() {
 		Expect(client.Close()).NotTo(HaveOccurred())
 	})
 
-	It("Accepts messages", func() {
+	It("Accepts messages", func(done Done) {
 		client.In <- message
 		scanner := bufio.NewScanner(tail)
 		Expect(scanner.Scan()).To(BeTrue())
 		received := irc.ParseMessage(scanner.Text())
 		Expect(received.Prefix).To(Equal(message.Prefix))
 		Expect(received.Command).To(Equal(message.Command))
+		close(done)
 	})
 
-	It("Emits messages", func() {
+	It("Emits messages", func(done Done) {
 		message.Buffer().WriteTo(tail)
 		received := <-client.Out
 		Expect(received.Prefix).To(Equal(message.Prefix))
 		Expect(received.Command).To(Equal(message.Command))
+		close(done)
 	})
 })

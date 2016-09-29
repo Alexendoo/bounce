@@ -29,8 +29,8 @@ import (
 
 type Config struct {
 	Version  int
-	Servers  []client.Server
-	Networks []network.Network
+	Servers  []*client.Server
+	Networks []*network.Network
 }
 
 var (

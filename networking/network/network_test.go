@@ -54,7 +54,7 @@ var _ = Describe("Network", func() {
 		Expect(network.Close()).NotTo(HaveOccurred())
 	})
 
-	It("Should send initial registration messages", func() {
+	It("Should send initial registration messages", func(done Done) {
 		go network.Register()
 
 		Expect(scanner.Scan()).To(BeTrue())
@@ -63,27 +63,35 @@ var _ = Describe("Network", func() {
 		Expect(scanner.Text()).To(Equal("NICK nickname"))
 		Expect(scanner.Scan()).To(BeTrue())
 		Expect(scanner.Text()).To(Equal("USER username - - :real name"))
+
+		close(done)
 	})
 
-	It("Should send incoming messages to the network", func() {
+	It("Should send incoming messages to the network", func(done Done) {
 		network.In <- &irc.Message{
 			Command: "PING",
 		}
 		Expect(scanner.Scan()).To(BeTrue())
 		Expect(scanner.Text()).To(Equal("PING"))
+
+		close(done)
 	})
 
-	It("Should emit messages from the network", func() {
+	It("Should emit messages from the network", func(done Done) {
 		text := ":example.org PING\r\n"
 		io.WriteString(conn, text)
 		message := <-network.Out
 		Expect(message.Buffer().String()).To(Equal(text))
+
+		close(done)
 	})
 
-	It("Should return an error if it fails to connect", func() {
+	It("Should return an error if it fails to connect", func(done Done) {
 		network := &Network{
 			Addr: "localhost:70000",
 		}
 		Expect(network.Connect()).To(HaveOccurred())
+
+		close(done)
 	})
 })
