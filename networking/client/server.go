@@ -12,7 +12,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-package server
+package client
 
 import "net"
 
@@ -28,24 +28,27 @@ type Server struct {
 	listener net.Listener
 }
 
-func (s *Server) Listen() (chan net.Conn, error) {
+func (s *Server) Listen() (chan *Request, error) {
 	listener, err := net.Listen("tcp", s.Addr)
 	if err != nil {
 		return nil, err
 	}
-	out := make(chan net.Conn)
+	out := make(chan *Request)
 	s.listener = listener
-	go func() {
-		for {
-			conn, err := s.listener.Accept()
-			if err != nil {
-				return
-			}
-			out <- conn
-		}
-	}()
+	// go s.accept(out)
 	return out, nil
 }
+
+// func (s *Server) accept(chan *Request) {
+// 	for {
+// 		conn, err := s.listener.Accept()
+// 		if err != nil {
+// 			log.Printf("Server error: %#+v\n", err)
+// 			return
+// 		}
+// 		go s.register(conn)
+// 	}
+// }
 
 func (s *Server) Close() error {
 	if s.listener == nil {
