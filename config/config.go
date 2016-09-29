@@ -27,7 +27,7 @@ import (
 	"macleod.io/bounce/networking/server"
 )
 
-type config struct {
+type Config struct {
 	Version  int
 	Servers  []server.Server
 	Networks []network.Network
@@ -35,15 +35,15 @@ type config struct {
 
 var (
 	location = flag.String("config", getDefaultConfig(), "read configuration from a specified file")
-	// Config is the current configuration, may not be saved to disk
-	Config config
+	// Current is the current configuration, may not be saved to disk
+	Current Config
 )
 
-// Load the configuration file into Config
+// Load the configuration file into Current
 func Load() {
 	readConfigFile()
 
-	tb, _ := yaml.Marshal(&Config)
+	tb, _ := yaml.Marshal(&Current)
 	fmt.Println(string(tb))
 }
 
@@ -52,7 +52,7 @@ func readConfigFile() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	yaml.Unmarshal(bytes, &Config)
+	yaml.Unmarshal(bytes, &Current)
 }
 
 func getDefaultConfig() string {

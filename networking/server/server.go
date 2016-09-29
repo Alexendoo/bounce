@@ -16,6 +16,12 @@ package server
 
 import "net"
 
+type ClientRequest struct {
+	Conn        net.Conn
+	Password    string
+	NetworkName string
+}
+
 type Server struct {
 	Addr string
 
