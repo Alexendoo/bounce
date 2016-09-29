@@ -22,12 +22,16 @@ func NewCapabilities() *Capabilities {
 	}
 }
 
-// Capabilities
+// Capabilities represent a set of IRCv3 capabilites, with support for 3
+// states: enabled, supported, disabled
+// - http://ircv3.net/specs/core/capability-negotiation-3.1.html
+// - http://ircv3.net/specs/core/capability-negotiation-3.2.html
 type Capabilities struct {
 	sync.RWMutex
 	caps map[string]bool
 }
 
+// Supported returns if cap is supported
 func (c *Capabilities) Supported(cap string) bool {
 	c.RLock()
 	_, exists := c.caps[cap]
@@ -36,6 +40,7 @@ func (c *Capabilities) Supported(cap string) bool {
 	return exists
 }
 
+// Enabled returns if cap is enabled, ie from CAP ACK
 func (c *Capabilities) Enabled(cap string) bool {
 	c.RLock()
 	enabled := c.caps[cap]
@@ -44,6 +49,7 @@ func (c *Capabilities) Enabled(cap string) bool {
 	return enabled
 }
 
+// Support marks the given caps as supported
 func (c *Capabilities) Support(caps ...string) {
 	c.Lock()
 	for _, cap := range caps {
@@ -55,6 +61,7 @@ func (c *Capabilities) Support(caps ...string) {
 	c.Unlock()
 }
 
+// Enable marks the given caps as enabled
 func (c *Capabilities) Enable(caps ...string) {
 	c.Lock()
 	for _, cap := range caps {
@@ -63,6 +70,7 @@ func (c *Capabilities) Enable(caps ...string) {
 	c.Unlock()
 }
 
+// Disable marks the given caps as disabled
 func (c *Capabilities) Disable(caps ...string) {
 	c.Lock()
 	for _, cap := range caps {
