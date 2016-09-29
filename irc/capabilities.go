@@ -23,7 +23,7 @@ func NewCapabilities() *Capabilities {
 }
 
 // Capabilities represent a set of IRCv3 capabilites, with support for 3
-// states: enabled, supported, disabled
+// states: enabled, supported, not supported
 // - http://ircv3.net/specs/core/capability-negotiation-3.1.html
 // - http://ircv3.net/specs/core/capability-negotiation-3.2.html
 type Capabilities struct {
@@ -47,6 +47,17 @@ func (c *Capabilities) Enabled(cap string) bool {
 	c.RUnlock()
 
 	return enabled
+}
+
+// List returns the currently enabled capabilites
+func (c *Capabilities) List() []string {
+	var caps []string
+	for cap, enabled := range c.caps {
+		if enabled {
+			caps = append(caps, cap)
+		}
+	}
+	return caps
 }
 
 // Support marks the given caps as supported

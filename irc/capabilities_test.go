@@ -49,4 +49,11 @@ var _ = Describe("Capabilities", func() {
 		Expect(caps.Supported("server-time")).To(BeTrue())
 		Expect(caps.Enabled("server-time")).To(BeFalse())
 	})
+
+	It("Lists enabled caps", func() {
+		caps.Support("batch", "away-notify")
+		caps.Enable("server-time", "sasl")
+
+		Expect(caps.List()).To(ConsistOf("server-time", "sasl"))
+	})
 })
