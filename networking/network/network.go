@@ -37,14 +37,22 @@ type Network struct {
 }
 
 func (n *Network) Connect() error {
+	n.In = make(chan *irc.Message)
+	n.Out = make(chan *irc.Message)
 	conn, err := net.Dial("tcp", n.Addr)
 	if err != nil {
 		return err
 	}
 	n.conn = conn
-	go n.scan()
 	go n.accept()
+	go n.scan()
 	return nil
+}
+
+func (n *Network) accept() {
+	for message := range n.In {
+		message.Buffer().WriteTo(n.conn)
+	}
 }
 
 func (n *Network) scan() {
@@ -54,22 +62,13 @@ func (n *Network) scan() {
 	}
 }
 
-func (n *Network) accept() {
-	for message := range n.In {
-		message.Buffer().WriteTo(n.conn)
-	}
+func (n *Network) Register() {
+	io.WriteString(n.conn, "CAP LS 302\r\n")
+	fmt.Fprintf(n.conn, "NICK %s\r\n", n.Nick)
+	fmt.Fprintf(n.conn, "USER %s - - :%s\r\n", n.User, n.Real)
 }
 
-func (n *Network) register() {
-	n.sendRaw("CAP LS 302")
-	n.sendRaw(fmt.Sprintf("NICK %s", n.Nick))
-	n.sendRaw(fmt.Sprintf("USER %s - - :%s", n.User, n.Real))
-}
-
-func (n *Network) sendRaw(message string) {
-	io.WriteString(n.conn, message+"\r\n")
-}
-
-func (n *Network) Disconnect() {
-	n.conn.Close()
+func (n *Network) Close() error {
+	close(n.In)
+	return n.conn.Close()
 }
