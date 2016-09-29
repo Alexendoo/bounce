@@ -27,7 +27,7 @@ func New(conn net.Conn) *Client {
 		In:   make(chan *irc.Message),
 		Out:  make(chan *irc.Message),
 	}
-	go client.listen()
+	go client.accept()
 	go client.scan()
 	return client
 }
@@ -50,7 +50,7 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) listen() {
+func (c *Client) accept() {
 	for message := range c.In {
 		// TODO : middleware
 		message.Buffer().WriteTo(c.conn)
