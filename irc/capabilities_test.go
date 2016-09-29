@@ -45,6 +45,7 @@ var _ = Describe("Capabilities", func() {
 	It("Distinguishes supported and enabled", func() {
 		caps.Support("server-time")
 
+		Expect(caps.Supported("batch")).To(BeFalse())
 		Expect(caps.Supported("server-time")).To(BeTrue())
 		Expect(caps.Enabled("server-time")).To(BeFalse())
 	})
