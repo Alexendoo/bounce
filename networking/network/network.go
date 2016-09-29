@@ -17,7 +17,6 @@ package network
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
 
 	"macleod.io/bounce/irc"
@@ -60,12 +59,21 @@ func (n *Network) scan() {
 	for scanner.Scan() {
 		n.Out <- irc.ParseMessage(scanner.Text())
 	}
+	// TODO: Reconnect + emit error to clients
 }
 
-func (n *Network) Register() {
-	io.WriteString(n.conn, "CAP LS 302\r\n")
-	fmt.Fprintf(n.conn, "NICK %s\r\n", n.Nick)
-	fmt.Fprintf(n.conn, "USER %s - - :%s\r\n", n.User, n.Real)
+func (n *Network) Register() error {
+	_, err := fmt.Fprintf(
+		n.conn,
+		"CAP LS 302\r\n"+
+			"NICK %s\r\n"+
+			"USER %s - - :%s\r\n",
+		n.Nick, n.User, n.Real,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (n *Network) Close() error {
