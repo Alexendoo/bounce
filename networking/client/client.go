@@ -15,13 +15,22 @@
 package client
 
 import (
-	"container/list"
-	"io"
+	"bufio"
 	"net"
+
+	"macleod.io/bounce/irc"
 )
 
-// TODO : register per client, hook into main channel? draw graph
-//      : capabilities under package irc
+func New(conn net.Conn) *Client {
+	client := &Client{
+		conn: conn,
+		In:   make(chan *irc.Message),
+		Out:  make(chan *irc.Message),
+	}
+	go client.listen()
+	go client.scan()
+	return client
+}
 
 type Capabilities struct {
 	Available    []string
@@ -30,9 +39,30 @@ type Capabilities struct {
 
 type Client struct {
 	Capabilities []Capabilities
-	Conn         net.Conn
+	conn         net.Conn
+
+	In  chan *irc.Message
+	Out chan *irc.Message
 }
 
-func (c *Client) Register(clients *list.List) {
-	io.WriteString(c.Conn, "hello\n")
+func (c *Client) Close() error {
+	close(c.In)
+	return c.conn.Close()
+}
+
+func (c *Client) listen() {
+	for message := range c.In {
+		// TODO : middleware
+		message.Buffer().WriteTo(c.conn)
+	}
+}
+
+func (c *Client) scan() {
+	scanner := bufio.NewScanner(c.conn)
+	for scanner.Scan() {
+		message := irc.ParseMessage(scanner.Text())
+		// TODO : middleware
+		c.Out <- message
+	}
+	close(c.Out)
 }
