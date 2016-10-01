@@ -20,13 +20,13 @@ import (
 	"macleod.io/bounce/networking/network"
 )
 
-type UpstreamMessage struct {
+type UpstreamData struct {
 	Message *irc.Message
 	Client  *client.Client
 	Network *network.Network
 }
 
-type DownstreamMessage struct {
+type DownstreamData struct {
 	Message *irc.Message
 	Clients []*client.Client
 	Network *network.Network
@@ -34,14 +34,14 @@ type DownstreamMessage struct {
 
 // Middleware manipulates messages between the client[s] and network
 type Middleware interface {
-	upstream(message *UpstreamMessage, out chan<- *UpstreamMessage)
-	downstream(message *DownstreamMessage, out chan<- *DownstreamMessage)
+	upstream(data *UpstreamData, out chan<- *UpstreamData)
+	downstream(data *DownstreamData, out chan<- *DownstreamData)
 }
 
 func NewUpstream(middleware ...Middleware) *Upstream {
-	in := make(chan *UpstreamMessage)
+	in := make(chan *UpstreamData)
 
-	var out chan *UpstreamMessage
+	var out chan *UpstreamData
 	for _, middleware := range middleware {
 		if out == nil {
 			out = pipeUpstream(middleware, in)
@@ -53,11 +53,11 @@ func NewUpstream(middleware ...Middleware) *Upstream {
 	return &Upstream{In: in, Out: out}
 }
 
-func pipeUpstream(m Middleware, in chan *UpstreamMessage) chan *UpstreamMessage {
-	out := make(chan *UpstreamMessage)
+func pipeUpstream(m Middleware, in chan *UpstreamData) chan *UpstreamData {
+	out := make(chan *UpstreamData)
 	go func() {
-		for message := range in {
-			m.upstream(message, out)
+		for data := range in {
+			m.upstream(data, out)
 		}
 		close(out)
 	}()
@@ -65,14 +65,14 @@ func pipeUpstream(m Middleware, in chan *UpstreamMessage) chan *UpstreamMessage 
 }
 
 type Upstream struct {
-	In  chan<- *UpstreamMessage
-	Out <-chan *UpstreamMessage
+	In  chan<- *UpstreamData
+	Out <-chan *UpstreamData
 }
 
 func NewDownstream(middleware ...Middleware) *Downstream {
-	in := make(chan *DownstreamMessage)
+	in := make(chan *DownstreamData)
 
-	var out chan *DownstreamMessage
+	var out chan *DownstreamData
 	for _, middleware := range middleware {
 		if out == nil {
 			out = pipeDownstream(middleware, in)
@@ -84,11 +84,11 @@ func NewDownstream(middleware ...Middleware) *Downstream {
 	return &Downstream{In: in, Out: out}
 }
 
-func pipeDownstream(m Middleware, in chan *DownstreamMessage) chan *DownstreamMessage {
-	out := make(chan *DownstreamMessage)
+func pipeDownstream(m Middleware, in chan *DownstreamData) chan *DownstreamData {
+	out := make(chan *DownstreamData)
 	go func() {
-		for message := range in {
-			m.downstream(message, out)
+		for data := range in {
+			m.downstream(data, out)
 		}
 		close(out)
 	}()
@@ -96,6 +96,6 @@ func pipeDownstream(m Middleware, in chan *DownstreamMessage) chan *DownstreamMe
 }
 
 type Downstream struct {
-	In  chan<- *DownstreamMessage
-	Out <-chan *DownstreamMessage
+	In  chan<- *DownstreamData
+	Out <-chan *DownstreamData
 }

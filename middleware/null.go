@@ -17,10 +17,10 @@ package middleware
 // Null has no affect on the message
 type Null struct{}
 
-func (n *Null) upstream(message *UpstreamMessage, out chan<- *UpstreamMessage) {
-	out <- message
+func (n *Null) upstream(data *UpstreamData, out chan<- *UpstreamData) {
+	out <- data
 }
 
-func (n *Null) downstream(message *DownstreamMessage, out chan<- *DownstreamMessage) {
-	out <- message
+func (n *Null) downstream(data *DownstreamData, out chan<- *DownstreamData) {
+	out <- data
 }

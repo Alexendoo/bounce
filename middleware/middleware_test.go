@@ -37,7 +37,7 @@ var _ = Describe("Middleware", func() {
 		})
 
 		It("Passes messages", func() {
-			m := &UpstreamMessage{
+			m := &UpstreamData{
 				Message: message,
 			}
 			upstream.In <- m
@@ -59,7 +59,7 @@ var _ = Describe("Middleware", func() {
 		})
 
 		It("Passes messages", func() {
-			m := &DownstreamMessage{
+			m := &DownstreamData{
 				Message: message,
 			}
 			downstream.In <- m
