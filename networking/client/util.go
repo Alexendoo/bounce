@@ -16,7 +16,9 @@ package client
 
 // SplitByCap seperates a list of clients into those that support the capability cap
 // and those that don't
-func SplitByCap(cap string, clients ...*Client) (enabled []*Client, disabled []*Client) {
+func SplitByCap(cap string, clients []*Client) (enabled []*Client, disabled []*Client) {
+	enabled = []*Client{}
+	disabled = []*Client{}
 	for _, client := range clients {
 		if client.Capabilities.Enabled(cap) {
 			enabled = append(enabled, client)

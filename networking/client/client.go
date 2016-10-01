@@ -26,6 +26,8 @@ func New(conn net.Conn) *Client {
 		conn: conn,
 		In:   make(chan *irc.Message),
 		Out:  make(chan *irc.Message),
+		// TODO: Store default somewhere?
+		Capabilities: irc.NewCapabilities(map[string]string(nil)),
 	}
 	go client.accept()
 	go client.scan()
@@ -33,7 +35,7 @@ func New(conn net.Conn) *Client {
 }
 
 type Client struct {
-	Capabilities irc.Capabilities
+	Capabilities *irc.Capabilities
 	conn         net.Conn
 
 	In  chan *irc.Message
