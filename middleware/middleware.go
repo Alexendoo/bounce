@@ -23,6 +23,7 @@ import (
 type UpstreamData struct {
 	Message *irc.Message
 	Client  *client.Client
+	Peers   []*client.Client
 	Network *network.Network
 }
 

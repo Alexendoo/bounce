@@ -37,11 +37,11 @@ var _ = Describe("Middleware", func() {
 		})
 
 		It("Passes messages", func() {
-			m := &UpstreamData{
+			data := &UpstreamData{
 				Message: message,
 			}
-			upstream.In <- m
-			Expect(<-upstream.Out).To(Equal(m))
+			upstream.In <- data
+			Expect(<-upstream.Out).To(Equal(data))
 		})
 
 		It("Closes", func() {
@@ -59,11 +59,11 @@ var _ = Describe("Middleware", func() {
 		})
 
 		It("Passes messages", func() {
-			m := &DownstreamData{
+			data := &DownstreamData{
 				Message: message,
 			}
-			downstream.In <- m
-			Expect(<-downstream.Out).To(Equal(m))
+			downstream.In <- data
+			Expect(<-downstream.Out).To(Equal(data))
 		})
 
 		It("Closes", func() {

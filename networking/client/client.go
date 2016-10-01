@@ -32,13 +32,8 @@ func New(conn net.Conn) *Client {
 	return client
 }
 
-type Capabilities struct {
-	Available    []string
-	Acknowledged []string
-}
-
 type Client struct {
-	Capabilities []Capabilities
+	Capabilities irc.Capabilities
 	conn         net.Conn
 
 	In  chan *irc.Message
