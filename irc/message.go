@@ -111,6 +111,7 @@ func parseTags(tagString string) map[string]string {
 // - https://tools.ietf.org/html/rfc1459#section-2.3
 // - http://ircv3.net/specs/core/message-tags-3.2.html
 type Message struct {
+	// Tags are a map of the message tags
 	Tags map[string]string
 	// Prefix is typically the source of the message, e.g. nick!ident@host
 	// or irc.example.org

@@ -23,37 +23,63 @@ import (
 
 var _ = Describe("Capabilities", func() {
 	var caps *Capabilities
+	var initialValues map[string]string
 
 	BeforeEach(func() {
-		caps = NewCapabilities()
+		initialValues = map[string]string{
+			ServerTime: "",
+			Sasl:       "PLAIN",
+		}
+		caps = NewCapabilities(initialValues)
 	})
 
-	It("Enables Capabilities", func() {
-		caps.Enable("server-time", "batch")
-		Expect(caps.Enabled("server-time")).To(BeTrue())
-		Expect(caps.Enabled("batch")).To(BeTrue())
-		Expect(caps.Enabled("away-notify")).To(BeFalse())
+	It("Detects supported caps", func() {
+		Expect(caps.Supported(ServerTime)).To(BeTrue())
 	})
 
-	It("Disables Capabilities", func() {
-		caps.Enable("server-time", "batch")
-		caps.Disable("server-time", "batch")
-		Expect(caps.Enabled("server-time")).To(BeFalse())
-		Expect(caps.Enabled("batch")).To(BeFalse())
+	It("Detects unsupported caps", func() {
+		Expect(caps.Supported(AwayNotify)).To(BeFalse())
 	})
 
-	It("Distinguishes supported and enabled", func() {
-		caps.Support("server-time")
-
-		Expect(caps.Supported("batch")).To(BeFalse())
-		Expect(caps.Supported("server-time")).To(BeTrue())
-		Expect(caps.Enabled("server-time")).To(BeFalse())
+	It("Enables new caps", func() {
+		caps.Enable(map[string]string{
+			Sasl: "PLAIN",
+		})
+		Expect(caps.Enabled(Sasl)).To(BeTrue())
+		Expect(caps.Enabled(ServerTime)).To(BeFalse())
+		Expect(caps.EnabledValue(Sasl)).To(Equal("PLAIN"))
 	})
 
-	It("Lists enabled caps", func() {
-		caps.Support("batch", "away-notify")
-		caps.Enable("server-time", "sasl")
+	It("Supports new caps", func() {
+		caps.Support(map[string]string{
+			Batch: "",
+			"key": "value",
+		})
 
-		Expect(caps.List()).To(ConsistOf("server-time", "sasl"))
+		Expect(caps.Supported(Batch)).To(BeTrue())
+		Expect(caps.Supported("key")).To(BeTrue())
+		Expect(caps.SupportedValue("key")).To(Equal("value"))
+	})
+
+	It("Deletes caps", func() {
+		caps.Enable(map[string]string{
+			ServerTime: "",
+		})
+
+		caps.Del(ServerTime, Sasl)
+		Expect(caps.LS()).To(BeEmpty())
+		Expect(caps.List()).To(BeEmpty())
+	})
+
+	It("Lists supported capabilities", func() {
+		Expect(caps.LS()).To(Equal(initialValues))
+	})
+
+	It("Lists enabled capabilities", func() {
+		initial := map[string]string{ServerTime: ""}
+
+		caps.Enable(initial)
+		list := caps.List()
+		Expect(list).To(Equal(initial))
 	})
 })
