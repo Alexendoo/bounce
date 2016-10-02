@@ -62,7 +62,9 @@ var _ = Describe("Parses messages", func() {
 		}))
 	})
 	Specify("All of the above", func() {
-		msg := ParseMessage(`@time=half\sfive;foo :example.org CAP * LS :server-time sasl`)
+		raw := `@time=half\sfive;foo :example.org CAP * LS :server-time sasl`
+		msg := ParseMessage(raw)
+		Expect(msg.Raw).To(Equal(raw))
 		Expect(msg.Tags).To(BeEquivalentTo(map[string]string{
 			"time": "half five",
 			"foo":  "",

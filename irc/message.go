@@ -26,6 +26,7 @@ import (
 func ParseMessage(raw string) *Message {
 	message := &Message{}
 	message.Time = time.Now()
+	message.Raw = raw
 	// <tags> ::= <tag> [';' <tag>]*
 	trail, lead := nextToken(raw, 0, 0)
 	if raw[trail] == '@' {
@@ -123,6 +124,9 @@ type Message struct {
 	// Params depend on the Command, for example with a PRIVMSG it would be the
 	// message target followed by the message text to send
 	Params []string
+	// Raw is the unparsed message as it was received, it is not updated - use
+	// Buffer() for an updated representation
+	Raw string
 	// Time is the message was received
 	Time time.Time
 }
